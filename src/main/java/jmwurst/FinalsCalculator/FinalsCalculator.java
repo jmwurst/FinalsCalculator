@@ -191,7 +191,7 @@ public class FinalsCalculator extends Application {
                 Class newClass = new Class(nameField.getText(), Double.parseDouble(curGrField.getText()), Double.parseDouble(finPrField.getText()));
                 if (classes.contains(newClass)) {
                     Optional<ButtonType> result = duplicateEntry.showAndWait();
-                    if (result.get() != DEyes){
+                    if (!result.isPresent() || result.get() != DEyes){
                         return;
                     }
                 }
@@ -280,32 +280,33 @@ public class FinalsCalculator extends Application {
     }
 
     public String CSVOutput() {
-        String out = ",Current Grade,Best Possible Final Grade,For A,For B,For C,For D,For F\n";
+        StringBuilder out = new StringBuilder();
+        out.append(",Current Grade,Best Possible Final Grade,For A,For B,For C,For D,For F\n");
         for (Class c : classes) {
-            out += c.name + ",";
-            out += String.format("%.2f,", c.currentAvg);
+            out.append(c.name + ",");
+            out.append(String.format("%.2f,", c.currentAvg));
             double max = (c.currentAvg * (1 - c.finalWeight)) + (100 * c.finalWeight);
-            out += String.format("%.2f,", max);
+            out.append(String.format("%.2f,", max));
             boolean firstLower = true;
             for (int i = 0; i < 5; i++) {
                 double lowerLimit = 90 - (i * 10);
                 double reqdScore = (lowerLimit - (c.currentAvg * (1 - c.finalWeight))) / c.finalWeight;
                 if (reqdScore > 100.0 || reqdScore < 0) {
                     if (firstLower) {
-                        out += "0";
+                        out.append("0");
                         firstLower = false;
                     } else {
-                        out += "n/a";
+                        out.append("n/a");
                     }
                 } else {
-                    out += String.format("%.2f", reqdScore);
+                    out.append(String.format("%.2f", reqdScore));
                 }
                 if (i != 4) {
-                    out += ",";
+                    out.append(",");
                 }
             }
-            out += "\n";
+            out.append("\n");
         }
-        return out;
+        return out.toString();
     }
 }

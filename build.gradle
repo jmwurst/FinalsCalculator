@@ -21,4 +21,12 @@ javafx {
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'jmwurst.FinalsCalculator.FinalsCalculator'
+        )
+    }
+}
+
 mainClassName = 'jmwurst.FinalsCalculator.FinalsCalculator'

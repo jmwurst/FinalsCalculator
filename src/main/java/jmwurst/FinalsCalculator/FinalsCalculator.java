@@ -5,9 +5,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -145,7 +143,7 @@ public class FinalsCalculator extends Application {
 
         //begin edit menu option
         Menu edit = new Menu("Edit");
-        MenuItem clear = new MenuItem("Clear...");
+        MenuItem clear = new MenuItem("Clear list...");
         clear.setOnAction(t -> {
             classes.clear();
             noneSelected.setValue(true);
@@ -162,6 +160,7 @@ public class FinalsCalculator extends Application {
 
         bar.getMenus().addAll(file, edit, help);
         bar.prefWidthProperty().bind(stage.widthProperty());
+        bar.prefWidth(50);
         //end menu bar
 
         //begin editor tab
@@ -372,7 +371,9 @@ public class FinalsCalculator extends Application {
 
         tabPane.getTabs().addAll(editor, dataDisp);
         borderPane.setCenter(tabPane);
-        root.getChildren().addAll(bar, borderPane);
+        VBox all = new VBox();
+        all.getChildren().addAll(bar, borderPane);
+        root.getChildren().addAll(all);
         stage.setScene(scene);
         stage.setTitle("Finals Calculator");
         stage.setWidth(675);

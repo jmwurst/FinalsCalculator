@@ -15,17 +15,23 @@ public class Class {
         this.currentAvg = new SimpleDoubleProperty(currentAvg);
         this.finalWeight = new SimpleDoubleProperty(decWt);
 
-        this.max = new SimpleDoubleProperty(Math.round(
+        this.max = (finalWeight == 0.0) ? new SimpleDoubleProperty(0.0)
+                : new SimpleDoubleProperty(Math.round(
                 ((currentAvg * (1 - decWt)) + (100.0 * decWt)) * 100.0) / 100.0);
-        this.needA = new SimpleDoubleProperty(Math.round(
+        this.needA = (finalWeight == 0.0) ? new SimpleDoubleProperty(0.0)
+                :  new SimpleDoubleProperty(Math.round(
                 (((90 - (currentAvg * (1 - decWt))) / decWt) * 100.0)) / 100.0);
-        this.needB = new SimpleDoubleProperty(Math.round(
+        this.needB = (finalWeight == 0.0) ? new SimpleDoubleProperty(0.0)
+                : new SimpleDoubleProperty(Math.round(
                 (((80 - (currentAvg * (1 - decWt))) / decWt) * 100.0)) / 100.0);
-        this.needC = new SimpleDoubleProperty(Math.round(
+        this.needC = (finalWeight == 0.0) ? new SimpleDoubleProperty(0.0)
+                : new SimpleDoubleProperty(Math.round(
                 (((70 - (currentAvg * (1 - decWt))) / decWt) * 100.0)) / 100.0);
-        this.needD = new SimpleDoubleProperty(Math.round(
+        this.needD = (finalWeight == 0.0) ? new SimpleDoubleProperty(0.0)
+                : new SimpleDoubleProperty(Math.round(
                 (((60 - (currentAvg * (1 - decWt))) / decWt) * 100.0)) / 100.0);
-        this.needF = new SimpleDoubleProperty(Math.round(
+        this.needF = (finalWeight == 0.0) ? new SimpleDoubleProperty(0.0)
+                : new SimpleDoubleProperty(Math.round(
                 (((50 - (currentAvg * (1 - decWt))) / decWt) * 100.0)) / 100.0);
     }
 

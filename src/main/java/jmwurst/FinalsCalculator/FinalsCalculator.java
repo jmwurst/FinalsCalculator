@@ -30,6 +30,7 @@ Definitions:
 
 about alert
 input error alert
+file saving alert
 duplicate entry alert
 file output specifications
 main scene
@@ -77,7 +78,7 @@ public class FinalsCalculator extends Application {
         Alert about = new Alert(Alert.AlertType.INFORMATION);
         about.setTitle("Finals Calculator - About");
         about.setHeaderText("About This Program");
-        about.setContentText("Justin Wurst - 2018");
+        about.setContentText("Justin Wurst\n2018");
         //end about alert
 
         //begin input error alert
@@ -86,6 +87,13 @@ public class FinalsCalculator extends Application {
         inputError.setHeaderText("Error - Invalid Data Entry");
         inputError.setContentText("One or more of the numerical values entered are not valid input.");
         //end input error alert
+
+        //begin file saving alert
+        Alert savingError = new Alert(Alert.AlertType.ERROR);
+        savingError.setTitle("Finals Calculator - Error");
+        savingError.setHeaderText("Error - File Saving");
+        savingError.setContentText("The file was unable to be saved.");
+        //end file saving alert
 
         //begin duplicate entry alert
         Alert duplicateEntry = new Alert(Alert.AlertType.CONFIRMATION);
@@ -126,14 +134,12 @@ public class FinalsCalculator extends Application {
         output.setOnAction(t -> {
             String out = CSVOutput();
             File csvOut = fileChooser.showSaveDialog(stage);
-            if (file != null) {
-                try {
-                    FileWriter fw = new FileWriter(csvOut);
-                    fw.write(out);
-                    fw.close();
-                } catch (IOException ex) {
-                    System.out.println(ex.getMessage());
-                }
+            try {
+                FileWriter fw = new FileWriter(csvOut);
+                fw.write(out);
+                fw.close();
+            } catch (Exception e) {
+                savingError.showAndWait();
             }
         });
         MenuItem quit = new MenuItem("Quit...");

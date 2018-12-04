@@ -11,6 +11,8 @@ import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -34,17 +36,20 @@ main scene
         file menu option
         edit menu option
         help menu option
-    list view
-    list operation controls
-        name field
-        numerical fields
-            current grade field
-            final weight field
-        button fields
-            add button
-            update button
-            remove button
-    list selection specification
+    editor tab
+        list view
+        list operation controls
+            name field
+            numerical fields
+                current grade field
+                final weight field
+            button fields
+                add button
+                update button
+                remove button
+                clear button
+        list selection specification
+    data display tab
  */
 
 public class FinalsCalculator extends Application {
@@ -91,6 +96,14 @@ public class FinalsCalculator extends Application {
         classes = FXCollections.observableArrayList();
         Group root = new Group();
         Scene scene = new Scene(root, 560, 400);
+        BorderPane borderPane = new BorderPane();
+        borderPane.prefHeightProperty().bind(scene.heightProperty());
+        borderPane.prefWidthProperty().bind(scene.widthProperty());
+        TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabPane.tabMinWidthProperty().bind(stage.widthProperty().multiply(0.3));
+        TableView<Class> table = new TableView<>();
+        table.prefWidthProperty().bind(stage.widthProperty());
 
         //begin menu bar
         MenuBar bar = new MenuBar();
@@ -118,12 +131,12 @@ public class FinalsCalculator extends Application {
 
         //begin edit menu option
         Menu edit = new Menu("Edit");
-        MenuItem clearcl = new MenuItem("Clear...");
-        clearcl.setOnAction(t -> {
+        MenuItem clear = new MenuItem("Clear...");
+        clear.setOnAction(t -> {
             classes.clear();
             noneSelected.setValue(true);
         });
-        edit.getItems().addAll(clearcl);
+        edit.getItems().addAll(clear);
         //end edit menu option
 
         //begin help menu option
@@ -136,6 +149,10 @@ public class FinalsCalculator extends Application {
         bar.getMenus().addAll(file, edit, help);
         bar.prefWidthProperty().bind(stage.widthProperty());
         //end menu bar
+
+        //begin editor tab
+        Tab editor = new Tab();
+        editor.setText("Editor");
 
         //begin list view
         ListView<Class> listView = new ListView<>(classes);
@@ -182,10 +199,10 @@ public class FinalsCalculator extends Application {
         //begin add button
         Button addcl = new Button();
         addcl.setText("Add");
-        addcl.prefWidthProperty().bind(modifiers.widthProperty().multiply(1.0/3.0));
-        addcl.disableProperty().bind(Bindings.isEmpty(nameField.textProperty()));
-        addcl.disableProperty().bind(Bindings.isEmpty(curGrField.textProperty()));
-        addcl.disableProperty().bind(Bindings.isEmpty(finPrField.textProperty()));
+        addcl.prefWidthProperty().bind(modifiers.widthProperty().multiply(0.25));
+        addcl.disableProperty().bind(Bindings.or(Bindings.isEmpty(nameField.textProperty()),
+                Bindings.or(Bindings.isEmpty(curGrField.textProperty()),
+                        Bindings.isEmpty(finPrField.textProperty()))));
         addcl.setOnAction(el -> {
             try {
                 Class newClass = new Class(nameField.getText(), Double.parseDouble(curGrField.getText()), Double.parseDouble(finPrField.getText()));
@@ -209,8 +226,12 @@ public class FinalsCalculator extends Application {
         //begin update button
         Button updatecl = new Button();
         updatecl.setText("Update");
-        updatecl.prefWidthProperty().bind(modifiers.widthProperty().multiply(1.0/3.0));
-        updatecl.disableProperty().bind(noneSelected);
+        updatecl.prefWidthProperty().bind(modifiers.widthProperty().multiply(0.25));
+        updatecl.disableProperty().bind(Bindings.or(Bindings.isEmpty(nameField.textProperty()),
+                Bindings.or(Bindings.isEmpty(curGrField.textProperty()),
+                        Bindings.or(Bindings.isEmpty(finPrField.textProperty()),
+                                Bindings.or(Bindings.isEmpty(classes),
+                                        noneSelected)))));
         updatecl.setOnAction(el -> {
             try {
                 Class newClass = new Class(nameField.getText(), Double.parseDouble(curGrField.getText()), Double.parseDouble(finPrField.getText()));
@@ -226,23 +247,36 @@ public class FinalsCalculator extends Application {
         //begin remove button
         Button removecl = new Button();
         removecl.setText("Remove");
-        removecl.prefWidthProperty().bind(modifiers.widthProperty().multiply(1.0/3.0));
+        removecl.prefWidthProperty().bind(modifiers.widthProperty().multiply(0.25));
         removecl.disableProperty().bind(noneSelected);
         removecl.setOnAction(el -> {
            classes.remove(listView.getSelectionModel().getSelectedIndex());
            if (curIndex != 0) {
                curIndex--;
            }
-           if (classes.size() == 0) {
-               noneSelected.set(true);
-           }
+           noneSelected.set(true);
         });
         //end remove button
 
-        modifiers.getChildren().addAll(addcl, updatecl, removecl);
+        //begin clear button
+        Button clearcl = new Button();
+        clearcl.setText("Clear");
+        clearcl.prefWidthProperty().bind(modifiers.widthProperty().multiply(0.25));
+        clearcl.disableProperty().bind(Bindings.and(Bindings.isEmpty(nameField.textProperty()),
+                Bindings.and(Bindings.isEmpty(curGrField.textProperty()),
+                        Bindings.isEmpty(finPrField.textProperty()))));
+        clearcl.setOnAction(el -> {
+            nameField.clear();
+            curGrField.clear();
+            finPrField.clear();
+        });
+        //end clear button
+
+        modifiers.getChildren().addAll(addcl, updatecl, removecl, clearcl);
         HBox.setMargin(addcl, new Insets(0, 8, 2, 8));
         HBox.setMargin(updatecl, new Insets(0, 8, 2, 8));
         HBox.setMargin(removecl, new Insets(0, 8, 2, 8));
+        HBox.setMargin(clearcl, new Insets(0, 8, 2, 8));
         //end button fields
 
         innerData.getChildren().addAll(name, nameField, fields, modifiers);
@@ -258,9 +292,9 @@ public class FinalsCalculator extends Application {
                 Class cur = listView.getSelectionModel().getSelectedItem();
                 curIndex = listView.getSelectionModel().getSelectedIndex();
                 noneSelected.set(false);
-                nameField.setText(cur.name);
-                curGrField.setText(String.format("%.2f", cur.currentAvg));
-                finPrField.setText(String.format("%.2f", 100 * cur.finalWeight));
+                nameField.setText(cur.getName());
+                curGrField.setText(String.format("%.2f", cur.getCurrentAvg()));
+                finPrField.setText(String.format("%.2f", 100 * cur.getFinalWeight()));
             }
         });
         //end list selection specifications
@@ -268,29 +302,77 @@ public class FinalsCalculator extends Application {
         HBox hbox = new HBox();
         hbox.getChildren().addAll(listView, innerData);
 
-        VBox outer = new VBox();
-        outer.getChildren().addAll(bar, hbox);
-        outer.prefHeightProperty().bind(stage.heightProperty());
+        editor.setContent(hbox);
+        //end editor tab
 
-        root.getChildren().add(outer);
+        //begin data display tab
+        Tab dataDisp = new Tab();
+        dataDisp.setText("Data Display");
+
+        TableColumn nameCol = new TableColumn("Name");
+        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(1.0/6.0));
+        nameCol.setCellValueFactory(new PropertyValueFactory<Class, String>("name"));
+
+        TableColumn currentAvgCol = new TableColumn("Current Average");
+        currentAvgCol.prefWidthProperty().bind(table.widthProperty().multiply(1.0/6.0));
+        currentAvgCol.setCellValueFactory(new PropertyValueFactory<Class, Double>("currentAvg"));
+
+        TableColumn maxCol = new TableColumn("Highest Possible");
+        maxCol.prefWidthProperty().bind(table.widthProperty().multiply(1.0/6.0));
+        maxCol.setCellValueFactory(new PropertyValueFactory<Class, Double>("max"));
+
+        TableColumn finalsCols = new TableColumn("Final exam scores needed to achieve:");
+
+        TableColumn aCol = new TableColumn("A");
+        aCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        aCol.setCellValueFactory(new PropertyValueFactory<Class, Double>("needA"));
+
+        TableColumn bCol = new TableColumn("B");
+        bCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        bCol.setCellValueFactory(new PropertyValueFactory<Class, Double>("needB"));
+
+        TableColumn cCol = new TableColumn("C");
+        cCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        cCol.setCellValueFactory(new PropertyValueFactory<Class, Double>("needC"));
+
+        TableColumn dCol = new TableColumn("D");
+        dCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        dCol.setCellValueFactory(new PropertyValueFactory<Class, Double>("needD"));
+
+        TableColumn fCol = new TableColumn("F");
+        fCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+        fCol.setCellValueFactory(new PropertyValueFactory<Class, Double>("needF"));
+
+        finalsCols.getColumns().addAll(aCol, bCol, cCol, dCol, fCol);
+
+        table.setItems(classes);
+        table.getColumns().addAll(nameCol, currentAvgCol, maxCol, finalsCols);
+        dataDisp.setContent(table);
+        //end data display tab
+
+        tabPane.getTabs().addAll(editor, dataDisp);
+        borderPane.setCenter(tabPane);
+        root.getChildren().addAll(bar, borderPane);
         stage.setScene(scene);
         stage.setTitle("Finals Calculator");
+        stage.setWidth(675);
+        stage.setHeight(350);
         stage.show();
         //end main scene
     }
 
-    public String CSVOutput() {
+    private String CSVOutput() {
         StringBuilder out = new StringBuilder();
         out.append(",Current Grade,Best Possible Final Grade,For A,For B,For C,For D,For F\n");
         for (Class c : classes) {
-            out.append(c.name + ",");
-            out.append(String.format("%.2f,", c.currentAvg));
-            double max = (c.currentAvg * (1 - c.finalWeight)) + (100 * c.finalWeight);
-            out.append(String.format("%.2f,", max));
+            out.append(c.getName()).append(",");
+            out.append(c.getCurrentAvg());
+            out.append(c.getMax());
             boolean firstLower = true;
             for (int i = 0; i < 5; i++) {
                 double lowerLimit = 90 - (i * 10);
-                double reqdScore = (lowerLimit - (c.currentAvg * (1 - c.finalWeight))) / c.finalWeight;
+                double reqdScore = (lowerLimit - (c.getCurrentAvg() * (1 - c.getFinalWeight())))
+                                    / c.getFinalWeight();
                 if (reqdScore > 100.0 || reqdScore < 0) {
                     if (firstLower) {
                         out.append("0");

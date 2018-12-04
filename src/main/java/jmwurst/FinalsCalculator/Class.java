@@ -78,9 +78,9 @@ public class Class {
             return false;
         } else {
             Class oC = (Class) o;
-            return (this.name.equals(oC.name))
-                    && (this.currentAvg.equals(oC.currentAvg))
-                    && (this.finalWeight.equals(oC.finalWeight));
+            return (this.name.get().equals(oC.name.get()))
+                    && (this.currentAvg.get() ==oC.currentAvg.get())
+                    && (this.finalWeight.get() == oC.finalWeight.get());
         }
     }
 }

@@ -3,8 +3,11 @@ package jmwurst.FinalsCalculator;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -54,9 +57,21 @@ main scene
 
 public class FinalsCalculator extends Application {
 
-    private ObservableList<Class> classes;
-    private int curIndex = -1;
+    private ObservableList<Class> classes = FXCollections.observableArrayList();
+    private ListView<Class> listView = new ListView<>(classes);
     private BooleanProperty noneSelected = new SimpleBooleanProperty(true);
+    private TextField nameField;
+    private TextField curGrField;
+    private TextField finPrField;
+    private int curIndex = -1;
+    private BooleanBinding notUpdated = Bindings.createBooleanBinding(() ->
+               classes.size() != 0 && curIndex != -1 && !noneSelected.get()
+                       && classes.get(curIndex)
+                            .equals(new Class(nameField.getText(),
+                                    Double.parseDouble(curGrField.getText()),
+                                    Double.parseDouble(finPrField.getText()))),
+
+                classes);
 
     public void start(Stage stage) {
 
@@ -93,7 +108,6 @@ public class FinalsCalculator extends Application {
         //end file output specifications
 
         //begin main scene
-        classes = FXCollections.observableArrayList();
         Group root = new Group();
         Scene scene = new Scene(root, 560, 400);
         BorderPane borderPane = new BorderPane();
@@ -155,7 +169,6 @@ public class FinalsCalculator extends Application {
         editor.setText("Editor");
 
         //begin list view
-        ListView<Class> listView = new ListView<>(classes);
         listView.prefWidthProperty().bind(stage.widthProperty().multiply(0.35));
         listView.prefHeightProperty().bind(stage.heightProperty());
         //end list view
@@ -165,7 +178,7 @@ public class FinalsCalculator extends Application {
 
         //begin name field
         Text name = new Text(0, 0, "Class name:");
-        TextField nameField = new TextField();
+        nameField = new TextField();
         //end name field
 
         //begin numerical fields
@@ -174,7 +187,7 @@ public class FinalsCalculator extends Application {
         //begin current grade field
         VBox cg = new VBox();
         Text curGr = new Text(0, 0, "Current grade:");
-        TextField curGrField = new TextField();
+        curGrField = new TextField();
         cg.getChildren().addAll(curGr, curGrField);
         VBox.setMargin(curGr, new Insets(0,2,4,4));
         VBox.setMargin(curGrField, new Insets(0,2,16,4));
@@ -184,7 +197,7 @@ public class FinalsCalculator extends Application {
         //begin final weight field
         VBox fp = new VBox();
         Text finPr = new Text(0, 0, "Weight of final (%):");
-        TextField finPrField = new TextField();
+        finPrField = new TextField();
         fp.getChildren().addAll(finPr, finPrField);
         VBox.setMargin(finPr, new Insets(0,4,4,2));
         VBox.setMargin(finPrField, new Insets(0,4,16,2));
@@ -213,12 +226,13 @@ public class FinalsCalculator extends Application {
                     }
                 }
                 classes.add(newClass);
-                noneSelected.set(true);
                 nameField.clear();
                 curGrField.clear();
                 finPrField.clear();
             } catch(Exception e) {
                 inputError.showAndWait();
+            } finally {
+                noneSelected.set(true);
             }
         });
         //end add button
@@ -231,12 +245,17 @@ public class FinalsCalculator extends Application {
                 Bindings.or(Bindings.isEmpty(curGrField.textProperty()),
                         Bindings.or(Bindings.isEmpty(finPrField.textProperty()),
                                 Bindings.or(Bindings.isEmpty(classes),
-                                        noneSelected)))));
+                                        Bindings.or(noneSelected,
+                                                notUpdated))))));
         updatecl.setOnAction(el -> {
             try {
                 Class newClass = new Class(nameField.getText(), Double.parseDouble(curGrField.getText()), Double.parseDouble(finPrField.getText()));
-                classes.add(curIndex, newClass);
-                classes.remove(curIndex + 1);
+                classes.remove(curIndex);
+                if (classes.size() == 0) {
+                    classes.add(newClass);
+                } else {
+                    classes.add(curIndex, newClass);
+                }
                 noneSelected.set(true);
             } catch(Exception e) {
                 inputError.showAndWait();
@@ -250,10 +269,7 @@ public class FinalsCalculator extends Application {
         removecl.prefWidthProperty().bind(modifiers.widthProperty().multiply(0.25));
         removecl.disableProperty().bind(noneSelected);
         removecl.setOnAction(el -> {
-           classes.remove(listView.getSelectionModel().getSelectedIndex());
-           if (curIndex != 0) {
-               curIndex--;
-           }
+           classes.remove(curIndex);
            noneSelected.set(true);
         });
         //end remove button
@@ -287,14 +303,18 @@ public class FinalsCalculator extends Application {
         //end list operation controls
 
         //begin list selection specifications
-        listView.getSelectionModel().selectedItemProperty().addListener(cl -> {
+        listView.setOnMouseClicked(eh -> {
+            curIndex = listView.getSelectionModel().getSelectedIndex();
             if (classes.size() != 0) {
+                curIndex = Math.min(curIndex, classes.size() - 1);
                 Class cur = listView.getSelectionModel().getSelectedItem();
                 curIndex = listView.getSelectionModel().getSelectedIndex();
                 noneSelected.set(false);
                 nameField.setText(cur.getName());
                 curGrField.setText(String.format("%.2f", cur.getCurrentAvg()));
                 finPrField.setText(String.format("%.2f", 100 * cur.getFinalWeight()));
+            } else {
+                curIndex = 0;
             }
         });
         //end list selection specifications

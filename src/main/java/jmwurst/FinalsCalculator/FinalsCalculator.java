@@ -310,16 +310,14 @@ public class FinalsCalculator extends Application {
         //begin list selection specifications
         listView.setOnMouseClicked(eh -> {
             curIndex = listView.getSelectionModel().getSelectedIndex();
-            if (classes.size() != 0) {
-                curIndex = Math.min(curIndex, classes.size() - 1);
-                Class cur = listView.getSelectionModel().getSelectedItem();
-                curIndex = listView.getSelectionModel().getSelectedIndex();
+            if (classes.size() != 0 && curIndex < classes.size()) {
                 noneSelected.set(false);
+                Class cur = classes.get(curIndex);
                 nameField.setText(cur.getName());
                 curGrField.setText(String.format("%.2f", cur.getCurrentAvg()));
                 finPrField.setText(String.format("%.2f", 100 * cur.getFinalWeight()));
             } else {
-                curIndex = 0;
+                noneSelected.set(true);
             }
         });
         //end list selection specifications
